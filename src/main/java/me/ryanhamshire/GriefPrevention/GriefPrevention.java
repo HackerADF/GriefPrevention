@@ -336,6 +336,20 @@ public class GriefPrevention extends JavaPlugin
 
         String dataMode = (this.dataStore instanceof FlatFileDataStore) ? "(File Mode)" : "(Database Mode)";
         AddLogEntry("Finished loading data " + dataMode + ".");
+        
+        // --- [ADF PATCH - FIX CLAIM LOAD ORDER] ---
+        // Delay claim loading until all worlds (including custom ones) have fully initialized
+        Bukkit.getScheduler().runTaskLater(this, () -> {
+            try {
+                AddLogEntry("[ADF-Fix] Delayed claim loading until world initialization complete.");
+                this.dataStore.loadClaims();
+                AddLogEntry("[ADF-Fix] Claims successfully loaded after world initialization.");
+            } catch (Exception e) {
+                AddLogEntry("[ADF-Fix] Failed to load claims after delay:");
+                e.printStackTrace();
+            }
+        }, 60L); // ~3 seconds delay
+        // --- [END PATCH] ---
 
         //unless claim block accrual is disabled, start the recurring per 10 minute event to give claim blocks to online players
         //20L ~ 1 second
